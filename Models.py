@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+
 db = SQLAlchemy()
 
 class Users(db.Model):
@@ -14,21 +15,21 @@ class Users(db.Model):
 
 class Products(db.Model):
     __tablename__ = 'products'
-    id = db.Column(db.Interger, primary_key=True)
+
+    id = db.Column(db.Integer, primary_key=True)
     image_url = db.Column(db.String, nullable=False)
     description = db.Column(db.String, nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     product_name = db.Column(db.String, nullable=False)
     category = db.Column(db.String, nullable=False)
-    rating = db.Column(db.Integer(5), nullable=False)
+    rating = db.Column(db.Integer, nullable=False) 
     created_at = db.Column(db.TIMESTAMP, server_default=db.func.now())
     updated_at = db.Column(db.TIMESTAMP, onupdate=db.func.now())
 
 class Orders(db.Model):
     __tablename__ = 'orders'
-    id = db.Column(db.Interger, pimary_key=True)
+
+    id = db.Column(db.Integer, primary_key=True)  
     product_id = db.Column(db.Integer, nullable=False)
-    user_id = db.Column(db.Interger, nullable=False)
+    user_id = db.Column(db.Integer, nullable=False) 
     placed_at = db.Column(db.TIMESTAMP, server_default=db.func.now())
-
-
