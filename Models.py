@@ -2,7 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-class UsersModel(db.Model):
+class Users(db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -15,7 +15,7 @@ class UsersModel(db.Model):
 
     orders = db.relationship("Orders",backref = "user", lazy = True)
 
-class ProductsModel(db.Model):
+class Products(db.Model):
     __tablename__ = 'products'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -30,7 +30,7 @@ class ProductsModel(db.Model):
 
     orders = db.relationship("Orders",backref = "product", lazy = True)
 
-class OrdersModel(db.Model):
+class Orders(db.Model):
     __tablename__ = 'orders'
 
     id = db.Column(db.Integer, primary_key=True)  
