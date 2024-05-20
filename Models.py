@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 db = SQLAlchemy()
 
@@ -25,10 +26,15 @@ class Products(db.Model):
     product_name = db.Column(db.String, nullable=False)
     category = db.Column(db.String, nullable=False)
     rating = db.Column(db.Integer, nullable=False) 
-    created_at = db.Column(db.TIMESTAMP, server_default=db.func.now())
-    updated_at = db.Column(db.TIMESTAMP, onupdate=db.func.now())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     orders = db.relationship("Orders",backref = "product", lazy = True)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.created_at = datetime.utcnow()
+        self.updated_at = datetime.utcnow()
 
 class Orders(db.Model):
     __tablename__ = 'orders'
@@ -38,5 +44,5 @@ class Orders(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False) 
     placed_at = db.Column(db.TIMESTAMP, server_default=db.func.now())
 
-    product = db.relationship("Products", backref=db.backref("order_items", lazy = True))
-    user = db.relationship("Users", backref=db.backref("order_items", lazy = True))
+    # product = db.relationship("Products", backref=db.backref("order_items", lazy = True))
+    # user = db.relationship("Users", backref=db.backref("order_items", lazy = True))
