@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import check_password_hash
 
 db = SQLAlchemy()
 
@@ -13,7 +14,11 @@ class Users(db.Model):
     role = db.Column(db.String(50), nullable=True)
     phone_number = db.Column(db.String(15), unique=True, nullable=False)
 
-    orders = db.relationship("Orders",backref = "user", lazy = True)
+    #orders = db.relationship("Orders",backref = "user", lazy = True)
+    
+    def check_password(self, plain_password):
+        return check_password_hash(self.password, plain_password)
+
 
 class Products(db.Model):
     __tablename__ = 'products'
@@ -28,7 +33,7 @@ class Products(db.Model):
     created_at = db.Column(db.TIMESTAMP, server_default=db.func.now())
     updated_at = db.Column(db.TIMESTAMP, onupdate=db.func.now())
 
-    orders = db.relationship("Orders",backref = "product", lazy = True)
+    #orders = db.relationship("Orders",backref = "product", lazy = True)
 
 class Orders(db.Model):
     __tablename__ = 'orders'
