@@ -18,6 +18,9 @@ class Users(db.Model):
     
     def check_password(self, plain_password):
         return check_password_hash(self.password, plain_password)
+    
+    def to_json(self):
+        return {"id": self.id, "role": self.role}
 
 
 class Products(db.Model):

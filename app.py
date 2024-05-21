@@ -12,6 +12,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db' 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['BUNDLE_ERRORS'] = True
+app.config["JWT_SECRET_KEY"] = "super-secret"
 
 api = Api(app) 
 migrations = Migrate(app, db)
@@ -25,7 +26,7 @@ bcrypt = Bcrypt(app)
 def home():
     return "Hello, world!"
 api.add_resource(User, '/users', '/users/<int:id>')
-api.add_resource(Login, '/login')
+api.add_resource(Login, '/login', '/login/<int:id>')
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
