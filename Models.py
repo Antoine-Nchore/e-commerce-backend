@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import check_password_hash
 
 db = SQLAlchemy()
 
@@ -14,6 +15,13 @@ class Users(db.Model):
     phone_number = db.Column(db.String(15), unique=True, nullable=False)
 
     orders = db.relationship("Orders",backref = "user", lazy = True)
+    
+    def check_password(self, plain_password):
+        return check_password_hash(self.password, plain_password)
+    
+    def to_json(self):
+        return {"id": self.id, "role": self.role}
+
 
 class Products(db.Model):
     __tablename__ = 'products'
@@ -38,5 +46,5 @@ class Orders(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False) 
     placed_at = db.Column(db.TIMESTAMP, server_default=db.func.now())
 
-    product = db.relationship("Products", backref=db.backref("order_items", lazy = True))
-    user = db.relationship("Users", backref=db.backref("order_items", lazy = True))
+    #product = db.relationship("Products", backref=db.backref("order_items", lazy = True))
+    #user = db.relationship("Users", backref=db.backref("order_items", lazy = True))
