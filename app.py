@@ -28,12 +28,13 @@ api.add_resource(CreateProduct, '/products')
 api.add_resource(FindProduct, '/products', '/products/<int:product_id>')
 api.add_resource(UpdateProduct, '/products/<int:product_id>')
 api.add_resource(DeleteProduct, '/products/<int:product_id>')
+api.add_resource(User, '/users', '/users/<int:id>')
+api.add_resource(Login, '/login', '/login/<int:id>')
+
 
 @app.route('/')
 def home():
     return "Hello, world!"
-api.add_resource(User, '/users', '/users/<int:id>')
-api.add_resource(Login, '/login', '/login/<int:id>')
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
