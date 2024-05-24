@@ -4,6 +4,7 @@ from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from Models import db
+from resources.products import CreateProduct, FindProduct, UpdateProduct, DeleteProduct
 from resources.users import User, Login
 
 app = Flask(__name__)
@@ -21,6 +22,12 @@ jwt = JWTManager(app)
 bcrypt = Bcrypt(app)
 
  
+
+# Add resources to API
+api.add_resource(CreateProduct, '/products')
+api.add_resource(FindProduct, '/products', '/products/<int:product_id>')
+api.add_resource(UpdateProduct, '/products/<int:product_id>')
+api.add_resource(DeleteProduct, '/products/<int:product_id>')
 
 @app.route('/')
 def home():
