@@ -6,6 +6,7 @@ from flask_jwt_extended import JWTManager
 from Models import db
 from resources.products import CreateProduct, FindProduct, UpdateProduct, DeleteProduct
 from resources.users import User, Login
+from resources.orders import OrderResource
 
 app = Flask(__name__)
 
@@ -30,6 +31,7 @@ api.add_resource(UpdateProduct, '/products/<int:product_id>')
 api.add_resource(DeleteProduct, '/products/<int:product_id>')
 api.add_resource(User, '/users', '/users/<int:id>')
 api.add_resource(Login, '/login', '/login/<int:id>')
+api.add_resource(OrderResource, '/orders', '/orders/<int:order_id>')
 
 
 @app.route('/')
