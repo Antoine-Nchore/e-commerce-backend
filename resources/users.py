@@ -30,19 +30,17 @@ class User(Resource):
     @marshal_with(response_field)
     def post(self):
         data = User.parser.parse_args()
-        data['password'] = generate_password_hash(data['password'])
+        data['password'] = generate_password_hash(data['password']).decode('utf8')
         data['role'] = 'client'
 
-        user = Users(**data)
         email = Users.query.filter_by(email=data['email']).one_or_none()
-
         if email:
             return {"message": "Email already taken", "status": "fail"}, 400
 
         phone_number = Users.query.filter_by(phone_number=data['phone_number']).one_or_none()
-
         if phone_number:
             return {"message": "Phone number already exists", "status": "fail"}, 400
+
         try:
             user = Users(**data)
             db.session.add(user)
@@ -58,8 +56,36 @@ class User(Resource):
                     "access_token": access_token,
                     "refresh_token": refresh_token,
                     "user": user_json }, 201
-        except:
-            return {"message": "Unable to create account", "status": "fail"}, 400   
+        except Exception as e:
+            return {"message": "Unable to create account", "status": "fail", "error": str(e)}, 400
+
+    @jwt_required()
+    def get(self, id=None):
+        if id:
+            user = Users.query.get(id)
+            if user:
+                user_data = {
+                    "id": user.id,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "email": user.email,
+                    "role": user.role,
+                    "phone_number": user.phone_number,
+                }
+                return {"message": "User found", "status": "success", "user": user_data}, 200
+            else:
+                return {"message": "User not found", "status": "fail"}, 404
+        else:
+            users = Users.query.all()
+            users_data = [{
+                    "id": user.id,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "email": user.email,
+                    "role": user.role,
+                    "phone_number": user.phone_number,
+            } for user in users]
+            return {"message": "Users retrieved", "status": "success", "users": users_data}, 200
 
 class Login(Resource):
     parser = reqparse.RequestParser()
@@ -80,9 +106,8 @@ class Login(Resource):
                         "status": "success",
                         "access_token": access_token,
                         "refresh_token": refresh_token,
-                        "user": user_json,
-                        }, 200
+                        "user": user_json}, 200
             else:
-                return {"message": "invalid email/password", "status": "fail"}
+                return {"message": "Invalid email/password", "status": "fail"}, 400
         else:
-            return {"message": "invalid email/password", "status": "fail"}
+            return {"message": "Invalid email/password", "status": "fail"}, 400
