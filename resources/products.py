@@ -10,6 +10,7 @@ product_fields = {
     "product_name": fields.String,
     "category": fields.String,
     "rating": fields.Integer,
+    "price": fields.Integer,
     "created_at": fields.DateTime,
     "updated_at": fields.DateTime
 }
@@ -28,6 +29,7 @@ class CreateProduct(Resource):
     parser.add_argument('image_url', required=True, help='image_url is required')
     parser.add_argument('category', required=True, help='category is required')
     parser.add_argument('rating', type=int, required=True, help='rating is required')
+    parser.add_argument('price', type=int, required=True, help='price is required')
 
     @marshal_with(response_field)
     def post(self):
@@ -54,6 +56,7 @@ class FindProduct(Resource):
                     "description": product.description,
                     "quantity": product.quantity,
                     "rating": product.rating,
+                    "price": product.price,
                     "created_at": product.created_at.isoformat() if product.created_at else None,
                     "updated_at": product.updated_at.isoformat() if product.created_at else None,
                 }
@@ -70,6 +73,7 @@ class FindProduct(Resource):
                 "description": product.description,
                 "quantity": product.quantity,
                 "rating": product.rating,
+                "price": product.price,
                 "created_at": product.created_at.isoformat() if product.created_at else None,
                 "updated_at": product.updated_at.isoformat() if product.created_at else None,
             } for product in all_products]

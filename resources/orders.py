@@ -17,6 +17,7 @@ class OrderResource(Resource):
             "image_url": fields.String,
             "description": fields.String,
             "quantity": fields.Integer,
+            "price": fields.Integer,
             "product_name": fields.String,
         }),
         "user": fields.Nested({
