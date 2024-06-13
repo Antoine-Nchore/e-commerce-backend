@@ -1,8 +1,22 @@
+from functools import wraps
 from Models import db, Users
 from flask import jsonify
 from flask_restful import Resource, reqparse, fields, marshal_with
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity
-from flask_bcrypt import generate_password_hash
+from flask_bcrypt import generate_password_hash, check_password_hash
+
+# Admin secret key
+ADMIN_SECRET = "5445"
+
+def admin_required(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        current_user_id = get_jwt_identity()
+        user = Users.query.filter_by(id=current_user_id).first()
+        if not user or user.role != 'admin':
+            return {"message": "Admins only!"}, 403
+        return fn(*args, **kwargs)
+    return wrapper
 
 user_fields = {
     'id': fields.Integer,
@@ -26,12 +40,17 @@ class User(Resource):
     parser.add_argument('email', required=True, help='email is required')
     parser.add_argument('password', required=True, help='password is required')
     parser.add_argument('phone_number', required=True, help='phone_number is required')
+    parser.add_argument('role', required=False)  
 
     @marshal_with(response_field)
     def post(self):
         data = User.parser.parse_args()
         data['password'] = generate_password_hash(data['password']).decode('utf8')
-        data['role'] = 'client'
+
+        if 'role' in data and data['role'] == ADMIN_SECRET: 
+            data['role'] = 'admin'
+        else:
+            data['role'] = 'client'
 
         email = Users.query.filter_by(email=data['email']).one_or_none()
         if email:
@@ -51,11 +70,13 @@ class User(Resource):
             access_token = create_access_token(identity=user_json['id'])
             refresh_token = create_refresh_token(identity=user_json['id'])
 
-            return {"message": "Account created successfully",
-                    "status": "success",
-                    "access_token": access_token,
-                    "refresh_token": refresh_token,
-                    "user": user_json }, 201
+            return {
+                "message": "Account created successfully",
+                "status": "success",
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "user": user_json
+            }, 201
         except Exception as e:
             return {"message": "Unable to create account", "status": "fail", "error": str(e)}, 400
 
@@ -76,20 +97,25 @@ class User(Resource):
             else:
                 return {"message": "User not found", "status": "fail"}, 404
         else:
-            users = Users.query.all()
-            users_data = [{
-                    "id": user.id,
-                    "first_name": user.first_name,
-                    "last_name": user.last_name,
-                    "email": user.email,
-                    "role": user.role,
-                    "phone_number": user.phone_number,
-            } for user in users]
-            return {"message": "Users retrieved", "status": "success", "users": users_data}, 200
+            return self.get_all_users()
+
+    @admin_required
+    @jwt_required()
+    def get_all_users(self):
+        users = Users.query.all()
+        users_data = [{
+            "id": user.id,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "email": user.email,
+            "role": user.role,
+            "phone_number": user.phone_number,
+        } for user in users]
+        return {"message": "Users retrieved", "status": "success", "users": users_data}, 200
 
 class Login(Resource):
     parser = reqparse.RequestParser()
-    parser.add_argument('email', required=True, help= 'email is required')
+    parser.add_argument('email', required=True, help='email is required')
     parser.add_argument('password', required=True, help='password is required')
 
     def post(self):
@@ -97,16 +123,17 @@ class Login(Resource):
         user = Users.query.filter_by(email=data['email']).first()
 
         if user:
-            is_password_correct = user.check_password(data['password'])
-            if is_password_correct:
+            if check_password_hash(user.password, data['password']):  # Validate password
                 user_json = user.to_json()
                 access_token = create_access_token(identity=user_json['id'])
                 refresh_token = create_refresh_token(identity=user_json['id'])
-                return {"message": "Login successful",
-                        "status": "success",
-                        "access_token": access_token,
-                        "refresh_token": refresh_token,
-                        "user": user_json}, 200
+                return {
+                    "message": "Login successful",
+                    "status": "success",
+                    "access_token": access_token,
+                    "refresh_token": refresh_token,
+                    "user": user_json
+                }, 200
             else:
                 return {"message": "Invalid email/password", "status": "fail"}, 400
         else:
