@@ -1,5 +1,6 @@
 from functools import wraps
 from Models import db, Users
+from flask_mail import Message
 from flask import jsonify
 from flask_restful import Resource, reqparse, fields, marshal_with
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity
@@ -44,7 +45,11 @@ class User(Resource):
 
     @marshal_with(response_field)
     def post(self):
+
+        from app import mail
+
         data = User.parser.parse_args()
+        user_password = data['password']
         data['password'] = generate_password_hash(data['password']).decode('utf8')
 
         if 'role' in data and data['role'] == ADMIN_SECRET: 
@@ -65,10 +70,15 @@ class User(Resource):
             db.session.add(user)
             db.session.commit()
             db.session.refresh(user)
+            
 
             user_json = user.to_json()
             access_token = create_access_token(identity=user_json['id'])
             refresh_token = create_refresh_token(identity=user_json['id'])
+
+            msg = Message("confirmation email", sender="kajmillempire@gmail.com", recipients=[data["email"]])
+            msg.body = f"Dear {data['first_name']},\n\nYour account has been successfully registered. Your password is: {user_password}\n\nPlease click on the following link to confirm your email: http://localhost:3000"
+            mail.send(msg)
 
             return {
                 "message": "Account created successfully",
