@@ -53,11 +53,16 @@ class OrderResource(Resource):
     
 
     @jwt_required()
-    def delete(self, order_id):
-        order = Orders.query.get(order_id)
-        if order:
-            db.session.delete(order)
-            db.session.commit()
-            return {"message": "Order deleted successfully"}, 200
+    def delete(self, order_id=None):
+        if order_id:
+            order = Orders.query.get(order_id)
+            if order:
+                db.session.delete(order)
+                db.session.commit()
+                return {"message": "Order deleted successfully"}, 200
+            else:
+                return {"message": "Order not found"}, 404
         else:
-            return {"message": "Order not found"}, 404
+            Orders.query.delete()
+            db.session.commit()
+            return {"message": "All orders deleted successfully"}, 200
