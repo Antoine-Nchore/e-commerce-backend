@@ -12,6 +12,7 @@ from flask_cors import CORS
 from itsdangerous import URLSafeSerializer
 import os
 from dotenv import load_dotenv
+from datetime import timedelta
 
 app = Flask(__name__)
 load_dotenv()
@@ -21,6 +22,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['BUNDLE_ERRORS'] = True
 app.config["JWT_SECRET_KEY"] = os.environ.get('JWT_SECRET_KEY')
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=30)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
